@@ -3,33 +3,36 @@
 
 #define LED_PIN_1     7
 #define LED_PIN_2     8
-#define NUM_LEDS_PER_STRIPE    300
+#define NUM_LEDS_PER_STRIPE_LEFT    230
+#define NUM_LEDS_PER_STRIPE_RIGHT    280
 #define BRIGHTNESS  255
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER RGB
-CRGB leds_l[NUM_LEDS_PER_STRIPE];
-CRGB leds_r[NUM_LEDS_PER_STRIPE];
+CRGB leds_l[NUM_LEDS_PER_STRIPE_LEFT];
+CRGB leds_r[NUM_LEDS_PER_STRIPE_RIGHT];
 
 int del_val = 100;
 byte delaytime = 250;
 int wave;
 
-//CRGBPalette16 currentPalette;
-//TBlendType    currentBlending;
+CRGBPalette16 currentPalette;
+TBlendType    currentBlending;
 #define UPDATES_PER_SECOND 100
 
 void setup() {
   delay(3000); // power-up safety delay
-  FastLED.addLeds<LED_TYPE, LED_PIN_1, COLOR_ORDER>(leds_l, NUM_LEDS_PER_STRIPE).setCorrection(TypicalLEDStrip);
-  FastLED.addLeds<LED_TYPE, LED_PIN_2, COLOR_ORDER>(leds_r, NUM_LEDS_PER_STRIPE).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, LED_PIN_1, COLOR_ORDER>(leds_l, NUM_LEDS_PER_STRIPE_LEFT).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<LED_TYPE, LED_PIN_2, COLOR_ORDER>(leds_r, NUM_LEDS_PER_STRIPE_RIGHT).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.setMaxPowerInVoltsAndMilliamps(12,16000);
+  FastLED.clear();
+  FastLED.show();
 
-  //currentPalette = RainbowColors_p;
-  //currentBlending = LINEARBLEND;
+  currentPalette = RainbowColors_p;
+  currentBlending = LINEARBLEND;
   Serial.begin(115200);
 }
-
+/*
 void wait(float factor) {
   FastLED.delay(delaytime*factor);
 }
@@ -110,6 +113,7 @@ void colorBR(byte hue, bool shouw) {
     FastLED.show();
   }
 }
+*/
 /*
 void colspBL(byte hue, byte startled, byte endled, bool shouw) {
   for(byte i = startled-1; i <= endled-1; i++) {
@@ -147,6 +151,7 @@ void colspBR(byte hue, byte startled, byte endled, bool shouw) {
   }
 }
 */
+/*
 void whiteBL(bool shouw) {
   for(int i = 0; i < NUM_LEDS_PER_STRIPE/2; i++) {
     leds_l[i].setRGB(255,255,255);
@@ -182,6 +187,7 @@ void whiteBR(bool shouw) {
     FastLED.show();
   }
 }
+*/
 /*
 void whispBL(byte startled, byte endled, bool shouw) {
   for(byte i = startled-1; i <= endled-1; i++) {
@@ -219,6 +225,7 @@ void whispBR(byte startled, byte endled, bool shouw) {
   }
 }
 */
+/*
 void rgbBL(byte r, byte g, byte b, bool shouw) {
   for(int i = 0; i < NUM_LEDS_PER_STRIPE/2; i++) {
     leds_l[i].setRGB(r,g,b);
@@ -946,20 +953,29 @@ void bike_policelights_eu() {
     AchtungEinsatz2();
   }
 }
+*/
 
 void flowing_rainbow(int colorIndex) {
-  for (int l = 0; l < NUM_LEDS_PER_STRIPE; l++) {
-    //leds_l[l] = ColorFromPalette(currentPalette, colorIndex, BRIGHTNESS, currentBlending);
-    //leds_r[l] = ColorFromPalette(currentPalette, colorIndex, BRIGHTNESS, currentBlending);
-    colorIndex += 3;
+  for (int l = 0; l < NUM_LEDS_PER_STRIPE_RIGHT; l++) {
+    if(l<NUM_LEDS_PER_STRIPE_LEFT){
+      leds_l[l] = ColorFromPalette(currentPalette, colorIndex, BRIGHTNESS, currentBlending);
+    }
+    if(l<NUM_LEDS_PER_STRIPE_RIGHT){
+      leds_r[l] = ColorFromPalette(currentPalette, colorIndex, BRIGHTNESS, currentBlending);
+    }
+    colorIndex += 1;
   }
 }
 
 void uniform_rainbow() {
   for (int c = 0; c < 255; c++) {
-    for (int l = 0; l < NUM_LEDS_PER_STRIPE; l++) {
-      leds_r[l].setHue(c);
-      leds_l[l].setHue(c);
+    for (int l = 0; l < NUM_LEDS_PER_STRIPE_LEFT; l++) {
+      if(l<NUM_LEDS_PER_STRIPE_LEFT) {
+        leds_l[l].setHue(c);
+      }
+      if(l>NUM_LEDS_PER_STRIPE_LEFT) {
+        leds_r[l].setHue(c);
+      }
     }
     FastLED.show();
     FastLED.delay(1000 / UPDATES_PER_SECOND);
@@ -998,14 +1014,13 @@ void police_lights() {
 void loop() {
   static int startIndex = 0;
   startIndex++;
-  //flowing_rainbow(startIndex);
-
+  flowing_rainbow(startIndex);
   //uniform_rainbow();
 
   //police_lights();
 
   //bike_policelights_us();
-  bike_policelights_eu();
+  //bike_policelights_eu();
 
   //FastLED.clear();
 
